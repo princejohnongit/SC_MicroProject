@@ -217,7 +217,7 @@ The output universe (`0–100`) defines fuzzy sets:
   - `self._universe = [i * (100 / (resolution - 1)) for i in range(resolution)]`
 - Final score is rounded to 2 decimals.
 - Final label is selected by strongest activation from `details`.
-- Tie breaking is deterministic: `max(strengths.items(), key=lambda item: (item[1], item[0]))` is used, so if two labels have equal strength, the one with the alphabetically later name is selected (for example, `"poor"` beats `"good"` in an exact tie).
+- Tie breaking is deterministic: `max(strengths.items(), key=lambda item: (item[1], item[0]))` is used, so if two labels have equal strength, the one that comes later alphabetically is selected (for example, `"poor"` beats `"good"` because `"p"` > `"g"`).
 
 ---
 
