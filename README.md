@@ -72,7 +72,9 @@ From the repository root:
 python fuzzy_student_evaluator.py
 ```
 
-Then enter prompted values for marks, attendance, and assignments.
+This launches a small **Tkinter UI** where you can enter marks, attendance, and assignments, then click **Evaluate** to view the output directly in the same window.
+
+If `tkinter` is unavailable in your environment, the script automatically falls back to the interactive CLI prompts.
 
 ### Example interactive session
 
@@ -101,7 +103,7 @@ python fuzzy_student_evaluator.py
 
 ### CLI behavior
 
-- Prompts for three numeric inputs.
+- If Tkinter is not available, prompts for three numeric inputs.
 - Rejects non-numeric input with `SystemExit` and a clear message:
   - `Invalid numeric input: ...`
 - Rejects out-of-range numeric values (`<0` or `>100`) with `SystemExit`:
