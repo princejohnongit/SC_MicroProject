@@ -103,9 +103,13 @@ python fuzzy_student_evaluator.py
 
 ### CLI behavior
 
-- If Tkinter is not available, prompts for three numeric inputs.
+- If Tkinter is not available, first prompts for input mode:
+  - numerical (`n`) for `0-100` numeric values
+  - fuzzy (`f`) for linguistic levels: `low`, `medium`, `high`
 - Rejects non-numeric input with `SystemExit` and a clear message:
   - `Invalid numeric input: ...`
+- Rejects invalid fuzzy levels with `SystemExit` and a clear message:
+  - `<field> must be one of: low, medium, high. Got '<value>'.`
 - Rejects out-of-range numeric values (`<0` or `>100`) with `SystemExit`:
   - `<field> must be between 0 and 100. Got <value>.`
 - Prints:

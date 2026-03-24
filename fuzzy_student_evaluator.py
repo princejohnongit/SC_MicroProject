@@ -17,6 +17,9 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, Tuple
 
 
+_FUZZY_LEVELS = ("low", "medium", "high")
+
+
 def _triangular(x: float, a: float, b: float, c: float) -> float:
     """Triangular membership function."""
     if x <= a or x >= c:
@@ -42,6 +45,14 @@ def _trapezoidal(x: float, a: float, b: float, c: float, d: float) -> float:
 def _validate_percent(value: float, name: str) -> None:
     if not 0 <= value <= 100:
         raise ValueError(f"{name} must be between 0 and 100. Got {value}.")
+
+
+def _normalize_fuzzy_level(value: str, name: str) -> str:
+    level = value.strip().lower()
+    if level not in _FUZZY_LEVELS:
+        allowed = ", ".join(_FUZZY_LEVELS)
+        raise ValueError(f"{name} must be one of: {allowed}. Got {value!r}.")
+    return level
 
 
 @dataclass
@@ -134,10 +145,31 @@ class FuzzyStudentEvaluator:
         label = self._label_from_score(score, strengths)
         return EvaluationResult(score=round(score, 2), label=label, details=strengths)
 
+    def evaluate_fuzzy(self, marks: str, attendance: str, assignments: str) -> EvaluationResult:
+        """Evaluate directly from fuzzy linguistic levels (low/medium/high)."""
+        marks_level = _normalize_fuzzy_level(marks, "marks")
+        attendance_level = _normalize_fuzzy_level(attendance, "attendance")
+        assignments_level = _normalize_fuzzy_level(assignments, "assignments")
+
+        fuzzified = {
+            "marks": {level: 1.0 if level == marks_level else 0.0 for level in _FUZZY_LEVELS},
+            "attendance": {level: 1.0 if level == attendance_level else 0.0 for level in _FUZZY_LEVELS},
+            "assignments": {level: 1.0 if level == assignments_level else 0.0 for level in _FUZZY_LEVELS},
+        }
+        strengths = self._apply_rules(fuzzified)
+        score = self._defuzzify(strengths)
+        label = self._label_from_score(score, strengths)
+        return EvaluationResult(score=round(score, 2), label=label, details=strengths)
+
 
 def evaluate_student(marks: float, attendance: float, assignments: float) -> EvaluationResult:
     """Helper for one-off evaluations."""
     return FuzzyStudentEvaluator().evaluate(marks, attendance, assignments)
+
+
+def evaluate_student_fuzzy(marks: str, attendance: str, assignments: str) -> EvaluationResult:
+    """Helper for one-off evaluations using fuzzy linguistic levels."""
+    return FuzzyStudentEvaluator().evaluate_fuzzy(marks, attendance, assignments)
 
 
 def _build_output_lines(result: EvaluationResult) -> str:
@@ -207,17 +239,31 @@ def _run_tkinter_ui() -> None:
 
 
 def _cli() -> None:
-    try:
-        marks = float(input("Enter marks (0-100): "))
-        attendance = float(input("Enter attendance (0-100): "))
-        assignments = float(input("Enter assignments (0-100): "))
-    except ValueError as exc:
-        raise SystemExit(f"Invalid numeric input: {exc}") from exc
+    mode = input("Choose input mode ([n]umerical/[f]uzzy): ").strip().lower()
 
-    try:
-        result = evaluate_student(marks, attendance, assignments)
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
+    if mode in {"n", "numerical", "numeric", "number"}:
+        try:
+            marks = float(input("Enter marks (0-100): "))
+            attendance = float(input("Enter attendance (0-100): "))
+            assignments = float(input("Enter assignments (0-100): "))
+        except ValueError as exc:
+            raise SystemExit(f"Invalid numeric input: {exc}") from exc
+
+        try:
+            result = evaluate_student(marks, attendance, assignments)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+    elif mode in {"f", "fuzzy"}:
+        allowed = ", ".join(_FUZZY_LEVELS)
+        try:
+            marks = input(f"Enter marks level ({allowed}): ")
+            attendance = input(f"Enter attendance level ({allowed}): ")
+            assignments = input(f"Enter assignments level ({allowed}): ")
+            result = evaluate_student_fuzzy(marks, attendance, assignments)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+    else:
+        raise SystemExit("Invalid mode selection. Choose numerical or fuzzy.")
 
     for line in _build_output_lines(result).splitlines():
         print(line)
