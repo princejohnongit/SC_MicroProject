@@ -5,7 +5,9 @@ import unittest
 from fuzzy_student_evaluator import (
     FuzzyStudentEvaluator,
     _cli,
+    _evaluate_fuzzy_from_strings,
     _evaluate_from_strings,
+    _trapezoidal,
     evaluate_student,
     evaluate_student_fuzzy,
 )
@@ -70,10 +72,24 @@ class TestFuzzyStudentEvaluator(unittest.TestCase):
         output = _evaluate_from_strings("abc", "90", "78")
         self.assertIn("Invalid numeric input", output)
 
+    def test_evaluate_fuzzy_from_strings_formats_output_for_valid_levels(self):
+        output = _evaluate_fuzzy_from_strings("high", "high", "high")
+        self.assertIn("Defuzzified score:", output)
+        self.assertIn("Performance label: Excellent", output)
+        self.assertIn("Rule activation strengths:", output)
+
+    def test_evaluate_fuzzy_from_strings_handles_invalid_level(self):
+        output = _evaluate_fuzzy_from_strings("super", "high", "high")
+        self.assertIn("marks must be one of: low, medium, high", output)
+
     def test_evaluate_student_fuzzy_supports_linguistic_levels(self):
         result = evaluate_student_fuzzy("high", "high", "high")
         self.assertEqual(result.label, "excellent")
         self.assertGreater(result.details["excellent"], 0)
+
+    def test_trapezoidal_supports_shoulder_endpoints(self):
+        self.assertEqual(_trapezoidal(0, 0, 0, 40, 55), 1.0)
+        self.assertEqual(_trapezoidal(100, 80, 88, 100, 100), 1.0)
 
 
 if __name__ == "__main__":
