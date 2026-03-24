@@ -293,5 +293,5 @@ The work on `fuzzy_student_evaluator.py` is split as follows:
 2. **Prince John** – Fuzzy rule base definition and inference flow (`AND`/`OR` logic, rule grouping).
 3. **Nived Tharun** – Output aggregation and defuzzification logic (centroid score computation).
 4. **Alfin** – Input validation and error-handling paths for evaluator/API usage.
-5. **Maari** – CLI interaction flow (prompting, output formatting, and user-facing messaging).
+5. **Mariam** – CLI interaction flow (prompting, output formatting, and user-facing messaging).
 6. **Anjana C** – Test alignment, verification support, and documentation consistency updates for this module.
