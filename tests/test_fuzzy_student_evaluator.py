@@ -1,7 +1,8 @@
 import math
+from unittest.mock import patch
 import unittest
 
-from fuzzy_student_evaluator import FuzzyStudentEvaluator, evaluate_student
+from fuzzy_student_evaluator import FuzzyStudentEvaluator, _cli, evaluate_student
 
 
 class TestFuzzyStudentEvaluator(unittest.TestCase):
@@ -29,6 +30,18 @@ class TestFuzzyStudentEvaluator(unittest.TestCase):
             result.details["poor"],
             max(result.details["average"], result.details["good"], result.details["excellent"]),
         )
+
+    def test_cli_interactive_prompts_with_valid_inputs_produces_expected_output(self):
+        with patch("builtins.input", side_effect=["82", "90", "78"]), patch("builtins.print") as mocked_print:
+            _cli()
+        output_lines = [call.args[0] for call in mocked_print.call_args_list]
+        self.assertTrue(any(line.startswith("Defuzzified score: ") and line.endswith("/100") for line in output_lines))
+        self.assertIn("Performance label: Excellent", output_lines)
+
+    def test_cli_interactive_rejects_non_numeric_input(self):
+        with patch("builtins.input", side_effect=["abc"]), self.assertRaises(SystemExit) as ctx:
+            _cli()
+        self.assertIn("Invalid numeric input", str(ctx.exception))
 
 
 if __name__ == "__main__":
