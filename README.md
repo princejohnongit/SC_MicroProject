@@ -179,7 +179,7 @@ All three inputs use trapezoidal membership functions for `low`, `medium`, and `
 - `medium`: trapezoidal `(50, 60, 70, 80)`
 - `high`: trapezoidal `(70, 82, 100, 100)`
 
-> Note: A triangular membership helper exists in the module, but the current model uses trapezoidal functions for fuzzification and output sets.
+> Note: The module includes a triangular membership helper for future extensibility and experimentation, but the current production rule set and output aggregation intentionally use trapezoidal functions only.
 
 ### Rule base
 
@@ -217,7 +217,7 @@ The output universe (`0–100`) defines fuzzy sets:
   - `self._universe = [i * (100 / (resolution - 1)) for i in range(resolution)]`
 - Final score is rounded to 2 decimals.
 - Final label is selected by strongest activation from `details`.
-- Tie breaking is deterministic: sorted by `(strength, label)` via `max(...)`, effectively preferring lexicographically higher label on equal strength.
+- Tie breaking is deterministic: `max(strengths.items(), key=lambda item: (item[1], item[0]))` is used, so if two labels have equal strength, the one with the alphabetically later name is selected (for example, `"poor"` beats `"good"` in an exact tie).
 
 ---
 
