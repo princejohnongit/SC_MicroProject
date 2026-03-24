@@ -33,8 +33,12 @@ def _triangular(x: float, a: float, b: float, c: float) -> float:
 
 def _trapezoidal(x: float, a: float, b: float, c: float, d: float) -> float:
     """Trapezoidal membership function."""
-    if x <= a or x >= d:
+    if x < a or x > d:
         return 0.0
+    if x == a:
+        return 1.0 if a == b else 0.0
+    if x == d:
+        return 1.0 if c == d else 0.0
     if b <= x <= c:
         return 1.0
     if a < x < b:
@@ -198,42 +202,84 @@ def _evaluate_from_strings(marks_text: str, attendance_text: str, assignments_te
     return _build_output_lines(result)
 
 
+def _evaluate_fuzzy_from_strings(marks_text: str, attendance_text: str, assignments_text: str) -> str:
+    try:
+        result = evaluate_student_fuzzy(marks_text, attendance_text, assignments_text)
+    except ValueError as exc:
+        return str(exc)
+    return _build_output_lines(result)
+
+
 def _run_tkinter_ui() -> None:
     import tkinter as tk
+    from tkinter import ttk
 
     root = tk.Tk()
     root.title("Fuzzy Student Evaluator")
     root.resizable(False, False)
 
-    container = tk.Frame(root, padx=12, pady=12)
-    container.grid(row=0, column=0, sticky="nsew")
+    notebook = ttk.Notebook(root)
+    notebook.grid(row=0, column=0, padx=12, pady=12, sticky="nsew")
 
-    tk.Label(container, text="Marks (0-100):").grid(row=0, column=0, sticky="w", pady=(0, 6))
-    marks_entry = tk.Entry(container, width=16)
+    numeric_tab = tk.Frame(notebook, padx=8, pady=8)
+    fuzzy_tab = tk.Frame(notebook, padx=8, pady=8)
+    notebook.add(numeric_tab, text="Numerical Input")
+    notebook.add(fuzzy_tab, text="Categorical Input")
+
+    tk.Label(numeric_tab, text="Marks (0-100):").grid(row=0, column=0, sticky="w", pady=(0, 6))
+    marks_entry = tk.Entry(numeric_tab, width=16)
     marks_entry.grid(row=0, column=1, sticky="w", pady=(0, 6))
 
-    tk.Label(container, text="Attendance (0-100):").grid(row=1, column=0, sticky="w", pady=(0, 6))
-    attendance_entry = tk.Entry(container, width=16)
+    tk.Label(numeric_tab, text="Attendance (0-100):").grid(row=1, column=0, sticky="w", pady=(0, 6))
+    attendance_entry = tk.Entry(numeric_tab, width=16)
     attendance_entry.grid(row=1, column=1, sticky="w", pady=(0, 6))
 
-    tk.Label(container, text="Assignments (0-100):").grid(row=2, column=0, sticky="w", pady=(0, 10))
-    assignments_entry = tk.Entry(container, width=16)
+    tk.Label(numeric_tab, text="Assignments (0-100):").grid(row=2, column=0, sticky="w", pady=(0, 10))
+    assignments_entry = tk.Entry(numeric_tab, width=16)
     assignments_entry.grid(row=2, column=1, sticky="w", pady=(0, 10))
 
-    output_text = tk.Text(container, width=48, height=8, wrap="word")
-    output_text.grid(row=4, column=0, columnspan=2, sticky="we")
+    numeric_output_text = tk.Text(numeric_tab, width=48, height=8, wrap="word")
+    numeric_output_text.grid(row=4, column=0, columnspan=2, sticky="we")
 
-    def on_evaluate() -> None:
+    def on_evaluate_numeric() -> None:
         output = _evaluate_from_strings(
             marks_entry.get(),
             attendance_entry.get(),
             assignments_entry.get(),
         )
-        output_text.delete("1.0", tk.END)
-        output_text.insert("1.0", output)
+        numeric_output_text.delete("1.0", tk.END)
+        numeric_output_text.insert("1.0", output)
 
-    evaluate_button = tk.Button(container, text="Evaluate", command=on_evaluate)
-    evaluate_button.grid(row=3, column=0, columnspan=2, sticky="we", pady=(0, 10))
+    evaluate_numeric_button = tk.Button(numeric_tab, text="Evaluate", command=on_evaluate_numeric)
+    evaluate_numeric_button.grid(row=3, column=0, columnspan=2, sticky="we", pady=(0, 10))
+
+    allowed = ", ".join(_FUZZY_LEVELS)
+    tk.Label(fuzzy_tab, text=f"Marks ({allowed}):").grid(row=0, column=0, sticky="w", pady=(0, 6))
+    fuzzy_marks_entry = tk.Entry(fuzzy_tab, width=16)
+    fuzzy_marks_entry.grid(row=0, column=1, sticky="w", pady=(0, 6))
+
+    tk.Label(fuzzy_tab, text=f"Attendance ({allowed}):").grid(row=1, column=0, sticky="w", pady=(0, 6))
+    fuzzy_attendance_entry = tk.Entry(fuzzy_tab, width=16)
+    fuzzy_attendance_entry.grid(row=1, column=1, sticky="w", pady=(0, 6))
+
+    tk.Label(fuzzy_tab, text=f"Assignments ({allowed}):").grid(row=2, column=0, sticky="w", pady=(0, 10))
+    fuzzy_assignments_entry = tk.Entry(fuzzy_tab, width=16)
+    fuzzy_assignments_entry.grid(row=2, column=1, sticky="w", pady=(0, 10))
+
+    fuzzy_output_text = tk.Text(fuzzy_tab, width=48, height=8, wrap="word")
+    fuzzy_output_text.grid(row=4, column=0, columnspan=2, sticky="we")
+
+    def on_evaluate_fuzzy() -> None:
+        output = _evaluate_fuzzy_from_strings(
+            fuzzy_marks_entry.get(),
+            fuzzy_attendance_entry.get(),
+            fuzzy_assignments_entry.get(),
+        )
+        fuzzy_output_text.delete("1.0", tk.END)
+        fuzzy_output_text.insert("1.0", output)
+
+    evaluate_fuzzy_button = tk.Button(fuzzy_tab, text="Evaluate", command=on_evaluate_fuzzy)
+    evaluate_fuzzy_button.grid(row=3, column=0, columnspan=2, sticky="we", pady=(0, 10))
 
     root.mainloop()
 

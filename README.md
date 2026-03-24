@@ -72,7 +72,12 @@ From the repository root:
 python fuzzy_student_evaluator.py
 ```
 
-This launches a small **Tkinter UI** where you can enter marks, attendance, and assignments, then click **Evaluate** to view the output directly in the same window.
+This launches a small **Tkinter UI** with two tabs:
+
+- **Numerical Input**: enter marks, attendance, and assignments as `0-100` values
+- **Categorical Input**: enter linguistic levels (`low`, `medium`, `high`)
+
+Click **Evaluate** in either tab to view the output directly in the same window.
 
 If `tkinter` is unavailable in your environment, the script automatically falls back to the interactive CLI prompts.
 
