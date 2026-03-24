@@ -62,18 +62,18 @@ class FuzzyStudentEvaluator:
         inputs = {
             "marks": {
                 "low": _trapezoidal(marks, 0, 0, 40, 55),
-                "medium": _triangular(marks, 45, 65, 80),
+                "medium": _trapezoidal(marks, 45, 60, 70, 80),
                 "high": _trapezoidal(marks, 70, 85, 100, 100),
             },
             "attendance": {
                 "low": _trapezoidal(attendance, 0, 0, 50, 65),
-                "medium": _triangular(attendance, 60, 75, 90),
+                "medium": _trapezoidal(attendance, 60, 72, 82, 92),
                 "high": _trapezoidal(attendance, 80, 90, 100, 100),
             },
             "assignments": {
                 "low": _trapezoidal(assignments, 0, 0, 45, 60),
-                "medium": _triangular(assignments, 50, 65, 80),
-                "high": _trapezoidal(assignments, 70, 85, 100, 100),
+                "medium": _trapezoidal(assignments, 50, 60, 70, 80),
+                "high": _trapezoidal(assignments, 70, 82, 100, 100),
             },
         }
         return inputs
@@ -99,9 +99,9 @@ class FuzzyStudentEvaluator:
     def _aggregate_output(self, strengths: Dict[str, float], x: float) -> float:
         membership_functions = {
             "poor": lambda v: _trapezoidal(v, 0, 0, 35, 50),
-            "average": lambda v: _triangular(v, 40, 55, 65),
-            "good": lambda v: _triangular(v, 60, 75, 85),
-            "excellent": lambda v: _trapezoidal(v, 80, 90, 100, 100),
+            "average": lambda v: _trapezoidal(v, 40, 50, 60, 70),
+            "good": lambda v: _trapezoidal(v, 65, 72, 82, 90),
+            "excellent": lambda v: _trapezoidal(v, 80, 88, 100, 100),
         }
 
         return max(
@@ -119,14 +119,8 @@ class FuzzyStudentEvaluator:
         return numerator / denominator if denominator else 0.0
 
     def _label_from_score(self, score: float, strengths: Dict[str, float]) -> str:
-        # Evaluate memberships at the crisp score and pick the highest.
-        memberships = {
-            "poor": min(strengths["poor"], _trapezoidal(score, 0, 0, 35, 50)),
-            "average": min(strengths["average"], _triangular(score, 40, 55, 65)),
-            "good": min(strengths["good"], _triangular(score, 60, 75, 85)),
-            "excellent": min(strengths["excellent"], _trapezoidal(score, 80, 90, 100, 100)),
-        }
-        return max(memberships.items(), key=lambda item: (item[1], item[0]))[0]
+        # Prefer the label with the strongest activation; break ties alphabetically for determinism.
+        return max(strengths.items(), key=lambda item: (item[1], item[0]))[0]
 
     def evaluate(self, marks: float, attendance: float, assignments: float) -> EvaluationResult:
         """Run fuzzy evaluation and return a qualitative performance summary."""

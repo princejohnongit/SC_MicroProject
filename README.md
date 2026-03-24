@@ -20,13 +20,13 @@ python fuzzy_student_evaluator.py --marks 82 --attendance 90 --assignments 78
 Example output:
 
 ```
-Defuzzified score: 82.39/100
+Defuzzified score: 87.39/100
 Performance label: Excellent
 Rule activation strengths:
  - Poor     : 0.00
  - Average  : 0.00
- - Good     : 0.52
- - Excellent: 0.62
+ - Good     : 0.20
+ - Excellent: 0.67
 ```
 
 ## How it works
