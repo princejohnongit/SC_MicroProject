@@ -141,17 +141,18 @@ def evaluate_student(marks: float, attendance: float, assignments: float) -> Eva
 
 
 def _cli() -> None:
-    import argparse
-    parser = argparse.ArgumentParser(
-        description="Fuzzy Logic–Based Student Evaluation System",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-    parser.add_argument("--marks", type=float, required=True, help="Exam/overall marks (0-100)")
-    parser.add_argument("--attendance", type=float, required=True, help="Attendance percentage (0-100)")
-    parser.add_argument("--assignments", type=float, required=True, help="Assignment performance (0-100)")
-    args = parser.parse_args()
+    try:
+        marks = float(input("Enter marks (0-100): "))
+        attendance = float(input("Enter attendance (0-100): "))
+        assignments = float(input("Enter assignments (0-100): "))
+    except ValueError as exc:
+        raise SystemExit(f"Invalid numeric input: {exc}") from exc
 
-    result = evaluate_student(args.marks, args.attendance, args.assignments)
+    try:
+        result = evaluate_student(marks, attendance, assignments)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+
     print(f"Defuzzified score: {result.score:.2f}/100")
     print(f"Performance label: {result.label.capitalize()}")
     print("Rule activation strengths:")

@@ -11,10 +11,10 @@ The system produces a defuzzified score (0–100) and a qualitative label (`poor
 ## Quick start
 
 1. Ensure you have Python 3.9+ available.
-2. Run the evaluator with your own inputs:
+2. Run the evaluator and enter your own inputs when prompted:
 
 ```bash
-python fuzzy_student_evaluator.py --marks 82 --attendance 90 --assignments 78
+python fuzzy_student_evaluator.py
 ```
 
 Example output:
