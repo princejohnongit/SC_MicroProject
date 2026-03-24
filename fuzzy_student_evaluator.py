@@ -140,6 +140,72 @@ def evaluate_student(marks: float, attendance: float, assignments: float) -> Eva
     return FuzzyStudentEvaluator().evaluate(marks, attendance, assignments)
 
 
+def _build_output_lines(result: EvaluationResult) -> str:
+    lines = [
+        f"Defuzzified score: {result.score:.2f}/100",
+        f"Performance label: {result.label.capitalize()}",
+        "Rule activation strengths:",
+    ]
+    for label, strength in result.details.items():
+        lines.append(f" - {label.capitalize():<9}: {strength:.2f}")
+    return "\n".join(lines)
+
+
+def _evaluate_from_strings(marks_text: str, attendance_text: str, assignments_text: str) -> str:
+    try:
+        marks = float(marks_text)
+        attendance = float(attendance_text)
+        assignments = float(assignments_text)
+    except ValueError as exc:
+        return f"Invalid numeric input: {exc}"
+
+    try:
+        result = evaluate_student(marks, attendance, assignments)
+    except ValueError as exc:
+        return str(exc)
+    return _build_output_lines(result)
+
+
+def _run_tkinter_ui() -> None:
+    import tkinter as tk
+
+    root = tk.Tk()
+    root.title("Fuzzy Student Evaluator")
+    root.resizable(False, False)
+
+    container = tk.Frame(root, padx=12, pady=12)
+    container.grid(row=0, column=0, sticky="nsew")
+
+    tk.Label(container, text="Marks (0-100):").grid(row=0, column=0, sticky="w", pady=(0, 6))
+    marks_entry = tk.Entry(container, width=16)
+    marks_entry.grid(row=0, column=1, sticky="w", pady=(0, 6))
+
+    tk.Label(container, text="Attendance (0-100):").grid(row=1, column=0, sticky="w", pady=(0, 6))
+    attendance_entry = tk.Entry(container, width=16)
+    attendance_entry.grid(row=1, column=1, sticky="w", pady=(0, 6))
+
+    tk.Label(container, text="Assignments (0-100):").grid(row=2, column=0, sticky="w", pady=(0, 10))
+    assignments_entry = tk.Entry(container, width=16)
+    assignments_entry.grid(row=2, column=1, sticky="w", pady=(0, 10))
+
+    output_text = tk.Text(container, width=48, height=8, wrap="word")
+    output_text.grid(row=4, column=0, columnspan=2, sticky="we")
+
+    def on_evaluate() -> None:
+        output = _evaluate_from_strings(
+            marks_entry.get(),
+            attendance_entry.get(),
+            assignments_entry.get(),
+        )
+        output_text.delete("1.0", tk.END)
+        output_text.insert("1.0", output)
+
+    evaluate_button = tk.Button(container, text="Evaluate", command=on_evaluate)
+    evaluate_button.grid(row=3, column=0, columnspan=2, sticky="we", pady=(0, 10))
+
+    root.mainloop()
+
+
 def _cli() -> None:
     try:
         marks = float(input("Enter marks (0-100): "))
@@ -153,12 +219,12 @@ def _cli() -> None:
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
 
-    print(f"Defuzzified score: {result.score:.2f}/100")
-    print(f"Performance label: {result.label.capitalize()}")
-    print("Rule activation strengths:")
-    for label, strength in result.details.items():
-        print(f" - {label.capitalize():<9}: {strength:.2f}")
+    for line in _build_output_lines(result).splitlines():
+        print(line)
 
 
 if __name__ == "__main__":
-    _cli()
+    try:
+        _run_tkinter_ui()
+    except Exception:
+        _cli()

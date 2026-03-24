@@ -2,7 +2,7 @@ import math
 from unittest.mock import patch
 import unittest
 
-from fuzzy_student_evaluator import FuzzyStudentEvaluator, _cli, evaluate_student
+from fuzzy_student_evaluator import FuzzyStudentEvaluator, _cli, _evaluate_from_strings, evaluate_student
 
 
 class TestFuzzyStudentEvaluator(unittest.TestCase):
@@ -42,6 +42,16 @@ class TestFuzzyStudentEvaluator(unittest.TestCase):
         with patch("builtins.input", side_effect=["abc"]), self.assertRaises(SystemExit) as ctx:
             _cli()
         self.assertIn("Invalid numeric input", str(ctx.exception))
+
+    def test_evaluate_from_strings_formats_output_for_valid_values(self):
+        output = _evaluate_from_strings("82", "90", "78")
+        self.assertIn("Defuzzified score:", output)
+        self.assertIn("Performance label: Excellent", output)
+        self.assertIn("Rule activation strengths:", output)
+
+    def test_evaluate_from_strings_handles_invalid_numeric_input(self):
+        output = _evaluate_from_strings("abc", "90", "78")
+        self.assertIn("Invalid numeric input", output)
 
 
 if __name__ == "__main__":
